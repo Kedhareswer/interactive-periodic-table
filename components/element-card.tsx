@@ -24,7 +24,7 @@ export default function ElementCard({
   return (
     <div
       className={cn(
-        "group relative h-full cursor-pointer overflow-hidden rounded-lg border bg-white shadow-md transition-all hover:shadow-lg dark:bg-slate-800/90",
+        "group relative h-full w-full cursor-pointer overflow-hidden rounded-lg border bg-white shadow-md transition-all hover:shadow-lg dark:bg-slate-800/90",
         trendColor || categoryColor,
         isSelected ? "ring-2 ring-amber-500 dark:ring-amber-400" : "border-amber-200 dark:border-amber-900/50",
         compact ? "p-1" : "p-2",
@@ -39,7 +39,7 @@ export default function ElementCard({
       <div
         className={cn(
           "absolute right-1 top-1 flex items-center justify-center rounded-bl-md bg-amber-800/10 text-xs font-medium text-amber-900 dark:bg-amber-700/20 dark:text-amber-300",
-          compact ? "h-5 min-w-5 px-1 text-[10px]" : "h-6 min-w-6 px-1",
+          compact ? "h-4 min-w-4 px-1 text-[9px]" : "h-6 min-w-6 px-1",
         )}
       >
         {atomicNumber}
@@ -47,14 +47,17 @@ export default function ElementCard({
 
       <div className="mt-2 flex flex-col items-center justify-center">
         <span
-          className={cn("font-serif font-bold text-amber-900 dark:text-amber-300", compact ? "text-lg" : "text-3xl")}
+          className={cn(
+            "font-serif font-bold text-amber-900 dark:text-amber-300",
+            compact ? "text-base" : "text-2xl md:text-3xl",
+          )}
         >
           {symbol}
         </span>
         <span
           className={cn(
             "mt-0.5 text-center font-medium text-amber-800 dark:text-amber-400",
-            compact ? "text-[10px]" : "text-xs md:text-sm",
+            compact ? "text-[9px]" : "text-xs md:text-sm",
           )}
         >
           {compact ? (name.length > 8 ? name.substring(0, 7) + "..." : name) : name}

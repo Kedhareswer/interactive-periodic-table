@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { elements } from "@/data/elements"
+import { elementsWithImages } from "@/data/element-images"
 import ElementCard from "./element-card"
 import ElementDetails from "./element-details"
 import ElementComparison from "./element-comparison"
@@ -20,9 +20,11 @@ export default function PeriodicTable() {
 
   const { activeTrend, setActiveTrend, getTrendColorForElement, TrendSelector, TrendLegend } = PeriodicTrends()
 
-  const categories = categorizeElements(elements)
+  const categories = categorizeElements(elementsWithImages)
 
-  const filteredElements = categoryFilter ? elements.filter((element) => element.category === categoryFilter) : elements
+  const filteredElements = categoryFilter
+    ? elementsWithImages.filter((element) => element.category === categoryFilter)
+    : elementsWithImages
 
   const handleElementClick = (element: ElementType) => {
     if (comparisonElements.length < 2 && showComparison) {
@@ -52,7 +54,7 @@ export default function PeriodicTable() {
   }
 
   // Create a mapping of elements by atomic number for the periodic table grid
-  const elementsByNumber = elements.reduce(
+  const elementsByNumber = elementsWithImages.reduce(
     (acc, element) => {
       acc[element.atomicNumber] = element
       return acc
@@ -147,7 +149,7 @@ export default function PeriodicTable() {
 
       {categoryFilter ? (
         // Display filtered elements in a grid
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(80px,1fr))] gap-3 md:grid-cols-[repeat(auto-fill,minmax(100px,1fr))] md:gap-4 lg:grid-cols-[repeat(auto-fill,minmax(120px,1fr))]">
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(90px,1fr))] gap-3 md:grid-cols-[repeat(auto-fill,minmax(110px,1fr))] md:gap-4 lg:grid-cols-[repeat(auto-fill,minmax(130px,1fr))]">
           {filteredElements.map((element) => (
             <motion.div
               key={element.atomicNumber}
@@ -168,7 +170,7 @@ export default function PeriodicTable() {
         </div>
       ) : (
         // Display standard periodic table layout
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto pb-4">
           <div className="min-w-[1000px]">
             <PeriodicTableGrid
               elementsByNumber={elementsByNumber}
@@ -250,7 +252,9 @@ function PeriodicTableGrid({
         <div key={rowIndex} className="flex gap-1">
           {row.map((atomicNumber, colIndex) => {
             if (atomicNumber === 0) {
-              return <div key={`empty-${rowIndex}-${colIndex}`} className="h-16 w-16 md:h-20 md:w-20"></div>
+              return (
+                <div key={`empty-${rowIndex}-${colIndex}`} className="h-14 w-14 md:h-16 md:w-16 lg:h-18 lg:w-18"></div>
+              )
             }
 
             const element = elementsByNumber[atomicNumber]
@@ -258,7 +262,7 @@ function PeriodicTableGrid({
               return (
                 <div
                   key={`missing-${atomicNumber}`}
-                  className="flex h-16 w-16 items-center justify-center rounded-lg border border-red-300 bg-red-50 text-xs text-red-800 md:h-20 md:w-20"
+                  className="flex h-14 w-14 items-center justify-center rounded-lg border border-red-300 bg-red-50 text-xs text-red-800 md:h-16 md:w-16 lg:h-18 lg:w-18"
                 >
                   Missing {atomicNumber}
                 </div>
@@ -270,7 +274,7 @@ function PeriodicTableGrid({
                 key={element.atomicNumber}
                 whileHover={{ scale: 1.05, zIndex: 10 }}
                 onClick={() => handleElementClick(element)}
-                className="h-16 w-16 md:h-20 md:w-20"
+                className="h-14 w-14 md:h-16 md:w-16 lg:h-18 lg:w-18"
               >
                 <ElementCard
                   element={element}

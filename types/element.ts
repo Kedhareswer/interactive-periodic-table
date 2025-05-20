@@ -11,4 +11,6 @@ export interface ElementType {
   description: string
   discoveredBy?: string
   namedAfter?: string
+  applications?: string[]
+  image?: string
 }

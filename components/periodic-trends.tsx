@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { elements } from "@/data/elements"
+import { elementsWithImages as elements } from "@/data/element-images"
 import { cn } from "@/lib/utils"
 import { BarChart3, Droplets, Flame, Zap } from "lucide-react"
 import type { ElementType } from "@/types/element"
@@ -145,14 +145,17 @@ const getTrendColor = (value: number, trend: TrendType): string => {
 export default function PeriodicTrends() {
   const [activeTrend, setActiveTrend] = useState<TrendType | null>(null)
 
-  const getTrendData = (atomicNumber: number): number => {
-    if (!activeTrend) return 0
+  const getTrendData = (atomicNumber: number, trendType?: TrendType): number => {
+    if (!trendType) {
+      if (!activeTrend) return 0
+      trendType = activeTrend
+    }
 
-    if (activeTrend === "atomicRadius") {
+    if (trendType === "atomicRadius") {
       return atomicRadiusData[atomicNumber] || 0
-    } else if (activeTrend === "electronegativity") {
+    } else if (trendType === "electronegativity") {
       return electronegativityData[atomicNumber] || 0
-    } else if (activeTrend === "ionizationEnergy") {
+    } else if (trendType === "ionizationEnergy") {
       return ionizationEnergyData[atomicNumber] || 0
     } else {
       return densityData[atomicNumber] || 0
