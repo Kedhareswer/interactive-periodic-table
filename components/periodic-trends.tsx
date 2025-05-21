@@ -1,62 +1,12 @@
 "use client"
 
 import { useState } from "react"
-import { elementsWithImages as elements } from "@/data/element-images"
 import { cn } from "@/lib/utils"
 import { BarChart3, Droplets, Flame, Zap } from "lucide-react"
 import type { ElementType } from "@/types/element"
+import { getTrendData, elementTrends } from "@/data/element-trends"
 
 type TrendType = "atomicRadius" | "electronegativity" | "ionizationEnergy" | "density"
-
-interface TrendData {
-  [key: number]: number
-}
-
-// Sample trend data (in a real application, this would be more accurate)
-const atomicRadiusData: TrendData = elements.reduce((acc, element) => {
-  // Approximate values - in a real app these would be accurate
-  const baseValue = 250 - element.period * 30 + (element.group ? element.group * 5 : 0)
-  const value = Math.max(50, Math.min(200, baseValue))
-  acc[element.atomicNumber] = value
-  return acc
-}, {} as TrendData)
-
-const electronegativityData: TrendData = elements.reduce((acc, element) => {
-  // Higher for upper right elements (except noble gases)
-  let value = 0
-  if (element.group) {
-    if (element.category === "Noble Gas") {
-      value = 0 // Noble gases have no electronegativity
-    } else {
-      value = (element.group > 10 ? element.group - 10 : element.group) * 0.5 + (4 - element.period) * 0.7
-      value = Math.max(0.5, Math.min(4.0, value))
-    }
-  }
-  acc[element.atomicNumber] = value
-  return acc
-}, {} as TrendData)
-
-const ionizationEnergyData: TrendData = elements.reduce((acc, element) => {
-  // Higher for upper right elements
-  let value = 0
-  if (element.group) {
-    value = (element.group > 10 ? element.group - 10 : element.group) * 0.8 + (4 - element.period) * 1.2
-    value = Math.max(3, Math.min(24, value))
-  }
-  acc[element.atomicNumber] = value
-  return acc
-}, {} as TrendData)
-
-const densityData: TrendData = elements.reduce((acc, element) => {
-  // Higher for bottom center elements
-  let value = 0
-  if (element.group) {
-    value = element.period * 3 + (element.group > 3 && element.group < 13 ? 5 : 0)
-    value = Math.max(0.5, Math.min(22, value))
-  }
-  acc[element.atomicNumber] = value
-  return acc
-}, {} as TrendData)
 
 const getTrendColor = (value: number, trend: TrendType): string => {
   // Define color ranges for each trend
@@ -117,14 +67,7 @@ const getTrendColor = (value: number, trend: TrendType): string => {
   let min = Number.POSITIVE_INFINITY
   let max = Number.NEGATIVE_INFINITY
 
-  const data =
-    trend === "atomicRadius"
-      ? atomicRadiusData
-      : trend === "electronegativity"
-        ? electronegativityData
-        : trend === "ionizationEnergy"
-          ? ionizationEnergyData
-          : densityData
+  const data = elementTrends[trend]
 
   Object.values(data).forEach((v) => {
     if (v > 0) {
@@ -145,33 +88,52 @@ const getTrendColor = (value: number, trend: TrendType): string => {
 export default function PeriodicTrends() {
   const [activeTrend, setActiveTrend] = useState<TrendType | null>(null)
 
-  const getTrendData = (atomicNumber: number, trendType?: TrendType): number => {
+  const getTrendDataForElement = (atomicNumber: number, trendType?: TrendType): number => {
     if (!trendType) {
       if (!activeTrend) return 0
       trendType = activeTrend
     }
 
-    if (trendType === "atomicRadius") {
-      return atomicRadiusData[atomicNumber] || 0
-    } else if (trendType === "electronegativity") {
-      return electronegativityData[atomicNumber] || 0
-    } else if (trendType === "ionizationEnergy") {
-      return ionizationEnergyData[atomicNumber] || 0
-    } else {
-      return densityData[atomicNumber] || 0
-    }
+    return getTrendData(atomicNumber, trendType)
   }
 
   const getTrendColorForElement = (element: ElementType): string => {
     if (!activeTrend) return ""
-    const value = getTrendData(element.atomicNumber)
+    const value = getTrendDataForElement(element.atomicNumber)
     return getTrendColor(value, activeTrend)
+  }
+
+  // Get trend range for legend
+  const getTrendRange = (trend: TrendType): { min: number; max: number; unit: string } => {
+    let min = Number.POSITIVE_INFINITY
+    let max = Number.NEGATIVE_INFINITY
+    const data = elementTrends[trend]
+
+    Object.values(data).forEach((v) => {
+      if (v > 0) {
+        // Ignore zero values
+        min = Math.min(min, v)
+        max = Math.max(max, v)
+      }
+    })
+
+    // Define units for each trend
+    const unit =
+      trend === "atomicRadius"
+        ? "pm"
+        : trend === "electronegativity"
+          ? ""
+          : trend === "ionizationEnergy"
+            ? "eV"
+            : "g/cm³"
+
+    return { min, max, unit }
   }
 
   return {
     activeTrend,
     setActiveTrend,
-    getTrendData,
+    getTrendData: getTrendDataForElement,
     getTrendColorForElement,
     TrendSelector: () => (
       <div className="mb-6 flex flex-wrap items-center gap-4">
@@ -249,6 +211,23 @@ export default function PeriodicTrends() {
               ? "purple"
               : "red"
 
+      const { min, max, unit } = getTrendRange(activeTrend)
+
+      // Format values based on trend type
+      const formatValue = (value: number): string => {
+        if (activeTrend === "atomicRadius") {
+          return `${Math.round(value)} ${unit}`
+        } else if (activeTrend === "electronegativity") {
+          return value.toFixed(1)
+        } else if (activeTrend === "ionizationEnergy") {
+          return `${value.toFixed(1)} ${unit}`
+        } else if (activeTrend === "density") {
+          // Special handling for density due to wide range
+          return value < 0.1 ? `${value.toExponential(2)} ${unit}` : `${value.toFixed(1)} ${unit}`
+        }
+        return `${value} ${unit}`
+      }
+
       return (
         <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50/50 p-4 dark:border-amber-900/30 dark:bg-amber-900/10">
           <h4 className="mb-2 font-serif text-lg font-semibold text-amber-800 dark:text-amber-400">
@@ -256,21 +235,21 @@ export default function PeriodicTrends() {
           </h4>
           <p className="mb-3 text-amber-900 dark:text-amber-200">
             {activeTrend === "atomicRadius"
-              ? "Atomic radius generally decreases from left to right across a period and increases down a group."
+              ? "Atomic radius is the distance from the center of the nucleus to the outermost electron shell. It generally decreases from left to right across a period and increases down a group."
               : activeTrend === "electronegativity"
-                ? "Electronegativity generally increases from left to right across a period and decreases down a group."
+                ? "Electronegativity is a measure of an atom's ability to attract electrons in a chemical bond. It generally increases from left to right across a period and decreases down a group."
                 : activeTrend === "ionizationEnergy"
-                  ? "Ionization energy generally increases from left to right across a period and decreases down a group."
-                  : "Density generally increases down a group and peaks in the middle of periods."}
+                  ? "Ionization energy is the energy required to remove an electron from a gaseous atom. It generally increases from left to right across a period and decreases down a group."
+                  : "Density is the mass per unit volume of a substance. It generally increases down a group and peaks in the middle of periods, with the highest values found among transition metals."}
           </p>
           <div className="flex items-center gap-2">
-            <span className="text-sm text-amber-800 dark:text-amber-400">Low</span>
+            <span className="text-sm text-amber-800 dark:text-amber-400">{formatValue(min)}</span>
             <div className={`h-4 w-6 rounded bg-${baseColor}-100 dark:bg-${baseColor}-900`}></div>
             <div className={`h-4 w-6 rounded bg-${baseColor}-200 dark:bg-${baseColor}-800`}></div>
             <div className={`h-4 w-6 rounded bg-${baseColor}-300 dark:bg-${baseColor}-700`}></div>
             <div className={`h-4 w-6 rounded bg-${baseColor}-400 dark:bg-${baseColor}-600`}></div>
             <div className={`h-4 w-6 rounded bg-${baseColor}-500 dark:bg-${baseColor}-500`}></div>
-            <span className="text-sm text-amber-800 dark:text-amber-400">High</span>
+            <span className="text-sm text-amber-800 dark:text-amber-400">{formatValue(max)}</span>
           </div>
         </div>
       )

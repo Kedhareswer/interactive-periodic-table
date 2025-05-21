@@ -1,3 +1,5 @@
+import type { IsotopeInfo } from "@/data/element-isotopes"
+
 export interface ElementType {
   atomicNumber: number
   symbol: string
@@ -12,5 +14,5 @@ export interface ElementType {
   discoveredBy?: string
   namedAfter?: string
   applications?: string[]
-  image?: string
+  isotopes?: IsotopeInfo[]
 }

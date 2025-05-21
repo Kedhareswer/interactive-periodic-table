@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { elementsWithImages } from "@/data/element-images"
+import { elementsWithIsotopes } from "@/data/element-isotopes"
 import ElementCard from "./element-card"
 import ElementDetails from "./element-details"
 import ElementComparison from "./element-comparison"
@@ -20,11 +20,11 @@ export default function PeriodicTable() {
 
   const { activeTrend, setActiveTrend, getTrendColorForElement, TrendSelector, TrendLegend } = PeriodicTrends()
 
-  const categories = categorizeElements(elementsWithImages)
+  const categories = categorizeElements(elementsWithIsotopes)
 
   const filteredElements = categoryFilter
-    ? elementsWithImages.filter((element) => element.category === categoryFilter)
-    : elementsWithImages
+    ? elementsWithIsotopes.filter((element) => element.category === categoryFilter)
+    : elementsWithIsotopes
 
   const handleElementClick = (element: ElementType) => {
     if (comparisonElements.length < 2 && showComparison) {
@@ -54,7 +54,7 @@ export default function PeriodicTable() {
   }
 
   // Create a mapping of elements by atomic number for the periodic table grid
-  const elementsByNumber = elementsWithImages.reduce(
+  const elementsByNumber = elementsWithIsotopes.reduce(
     (acc, element) => {
       acc[element.atomicNumber] = element
       return acc

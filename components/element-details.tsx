@@ -2,14 +2,13 @@
 
 import { useState } from "react"
 import type { ElementType } from "@/types/element"
+import type { IsotopeInfo } from "@/data/element-isotopes"
 import { motion } from "framer-motion"
-import { X, Beaker, CuboidIcon as Cube, ImageIcon } from "lucide-react"
+import { X, Beaker, AtomIcon } from "lucide-react"
 import { getCategoryColor } from "@/lib/categorize-elements"
 import { cn } from "@/lib/utils"
 import PeriodicTrends from "./periodic-trends"
 import TrendValueDisplay from "./trend-value-display"
-import AtomicModel3D from "./atomic-model-3d"
-import Image from "next/image"
 
 interface ElementDetailsProps {
   element: ElementType
@@ -31,10 +30,10 @@ export default function ElementDetails({ element, onClose }: ElementDetailsProps
     discoveredBy,
     namedAfter,
     applications,
-    image,
+    isotopes,
   } = element
 
-  const [activeTab, setActiveTab] = useState<"info" | "3d" | "image">("info")
+  const [activeTab, setActiveTab] = useState<"info" | "isotopes">("info")
 
   const { getTrendData } = PeriodicTrends()
 
@@ -91,31 +90,17 @@ export default function ElementDetails({ element, onClose }: ElementDetailsProps
                 Info
               </button>
               <button
-                onClick={() => setActiveTab("3d")}
+                onClick={() => setActiveTab("isotopes")}
                 className={cn(
                   "flex flex-1 items-center justify-center gap-1 rounded-lg border border-amber-200 px-3 py-2 text-sm font-medium transition-colors dark:border-amber-900/50",
-                  activeTab === "3d"
+                  activeTab === "isotopes"
                     ? "bg-amber-100 text-amber-900 dark:bg-amber-900/30 dark:text-amber-300"
                     : "bg-white text-amber-700 hover:bg-amber-50 dark:bg-slate-800 dark:text-amber-400 dark:hover:bg-slate-800/80",
                 )}
               >
-                <Cube className="h-4 w-4" />
-                <span>3D Model</span>
+                <AtomIcon className="h-4 w-4" />
+                <span>Isotopes</span>
               </button>
-              {image && (
-                <button
-                  onClick={() => setActiveTab("image")}
-                  className={cn(
-                    "flex flex-1 items-center justify-center gap-1 rounded-lg border border-amber-200 px-3 py-2 text-sm font-medium transition-colors dark:border-amber-900/50",
-                    activeTab === "image"
-                      ? "bg-amber-100 text-amber-900 dark:bg-amber-900/30 dark:text-amber-300"
-                      : "bg-white text-amber-700 hover:bg-amber-50 dark:bg-slate-800 dark:text-amber-400 dark:hover:bg-slate-800/80",
-                  )}
-                >
-                  <ImageIcon className="h-4 w-4" />
-                  <span>Image</span>
-                </button>
-              )}
             </div>
           </div>
 
@@ -217,54 +202,76 @@ export default function ElementDetails({ element, onClose }: ElementDetailsProps
               </>
             )}
 
-            {activeTab === "3d" && (
+            {activeTab === "isotopes" && (
               <div className="mt-4">
                 <h3 className="mb-3 flex items-center gap-2 font-serif text-xl font-semibold text-amber-800 dark:text-amber-400">
-                  <Cube className="h-5 w-5" />
-                  <span>Interactive Atomic Model</span>
+                  <AtomIcon className="h-5 w-5" />
+                  <span>Isotopes of {name}</span>
                 </h3>
                 <p className="mb-4 text-amber-700 dark:text-amber-400">
-                  This is a simplified model of the atomic structure. Drag to rotate, scroll to zoom.
+                  Isotopes are atoms of the same element with different numbers of neutrons, resulting in different
+                  atomic masses.
                 </p>
-                <AtomicModel3D element={element} />
+
+                {isotopes && isotopes.length > 0 ? (
+                  <div className="space-y-4">
+                    {isotopes.map((isotope: IsotopeInfo) => (
+                      <div
+                        key={isotope.massNumber}
+                        className="rounded-lg border border-amber-200 bg-amber-50/50 p-4 dark:border-amber-900/30 dark:bg-amber-900/10"
+                      >
+                        <h4 className="flex items-center text-lg font-medium text-amber-900 dark:text-amber-300">
+                          <span className="mr-2">
+                            {symbol}-{isotope.massNumber}
+                          </span>
+                          {isotope.isStable ? (
+                            <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/40 dark:text-green-300">
+                              Stable
+                            </span>
+                          ) : (
+                            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
+                              Radioactive
+                            </span>
+                          )}
+                        </h4>
+                        <div className="mt-2 grid grid-cols-1 gap-2 md:grid-cols-2">
+                          {isotope.abundance !== undefined && (
+                            <div>
+                              <p className="text-xs text-amber-700 dark:text-amber-500">Natural Abundance</p>
+                              <p className="font-medium text-amber-900 dark:text-amber-300">
+                                {isotope.abundance.toFixed(4)}%
+                              </p>
+                            </div>
+                          )}
+                          {isotope.halfLife && (
+                            <div>
+                              <p className="text-xs text-amber-700 dark:text-amber-500">Half-life</p>
+                              <p className="font-medium text-amber-900 dark:text-amber-300">{isotope.halfLife}</p>
+                            </div>
+                          )}
+                        </div>
+                        {isotope.description && (
+                          <p className="mt-2 text-sm text-amber-800 dark:text-amber-400">{isotope.description}</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/30 dark:bg-amber-900/10">
+                    <p className="text-amber-800 dark:text-amber-400">
+                      No detailed isotope data available for this element.
+                    </p>
+                  </div>
+                )}
+
                 <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/30 dark:bg-amber-900/10">
-                  <h4 className="font-medium text-amber-800 dark:text-amber-400">About this model</h4>
+                  <h4 className="font-medium text-amber-800 dark:text-amber-400">About Isotopes</h4>
                   <p className="mt-1 text-sm text-amber-700 dark:text-amber-500">
-                    This 3D model shows a simplified Bohr model of the atom with a nucleus (containing protons and
-                    neutrons) and electrons orbiting in shells. The actual quantum mechanical model is more complex,
-                    with electrons existing as probability clouds rather than discrete particles in fixed orbits.
+                    All atoms of an element have the same number of protons (the atomic number), but they can have
+                    different numbers of neutrons. The sum of protons and neutrons gives the mass number. Isotopes can
+                    be stable or radioactive, with the latter decaying over time into other elements.
                   </p>
                 </div>
-              </div>
-            )}
-
-            {activeTab === "image" && image && (
-              <div className="mt-4">
-                <h3 className="mb-3 flex items-center gap-2 font-serif text-xl font-semibold text-amber-800 dark:text-amber-400">
-                  <ImageIcon className="h-5 w-5" />
-                  <span>{name} Visualization</span>
-                </h3>
-                <div className="overflow-hidden rounded-lg border border-amber-200 bg-white dark:border-amber-900/30 dark:bg-slate-800">
-                  <div className="relative aspect-square w-full max-w-md">
-                    <Image
-                      src={image || "/placeholder.svg"}
-                      alt={`Visual representation of ${name}`}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                </div>
-                <p className="mt-2 text-sm text-amber-700 dark:text-amber-500">
-                  Visual representation of {name} ({symbol}). In its natural state, {name.toLowerCase()}{" "}
-                  {category === "Noble Gas" || category === "Halogen" || category === "Nonmetal"
-                    ? "is typically found as a gas"
-                    : category === "Alkali Metal" ||
-                        category === "Alkaline Earth Metal" ||
-                        category === "Transition Metal"
-                      ? "has a metallic appearance"
-                      : "has distinctive physical properties"}
-                  .
-                </p>
               </div>
             )}
           </div>

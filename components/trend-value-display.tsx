@@ -23,7 +23,12 @@ export default function TrendValueDisplay({ value, trend, className }: TrendValu
     formattedValue = value.toFixed(1)
     unit = " eV"
   } else if (trend === "density") {
-    formattedValue = value.toFixed(1)
+    // Special handling for density due to wide range
+    if (value < 0.1) {
+      formattedValue = value.toExponential(2)
+    } else {
+      formattedValue = value.toFixed(2)
+    }
     unit = " g/cm³"
   }
 

@@ -2,14 +2,13 @@
 
 import { useState } from "react"
 import type { ElementType } from "@/types/element"
+import type { IsotopeInfo } from "@/data/element-isotopes"
 import { motion } from "framer-motion"
-import { X, Beaker, CuboidIcon as Cube, ImageIcon } from "lucide-react"
+import { X, Beaker, AtomIcon } from "lucide-react"
 import { getCategoryColor } from "@/lib/categorize-elements"
 import { cn } from "@/lib/utils"
 import PeriodicTrends from "./periodic-trends"
 import TrendValueDisplay from "./trend-value-display"
-import AtomicModel3D from "./atomic-model-3d"
-import Image from "next/image"
 
 interface ElementComparisonProps {
   elements: ElementType[]
@@ -17,7 +16,7 @@ interface ElementComparisonProps {
 }
 
 export default function ElementComparison({ elements, onClose }: ElementComparisonProps) {
-  const [activeTab, setActiveTab] = useState<"info" | "3d" | "image">("info")
+  const [activeTab, setActiveTab] = useState<"info" | "isotopes">("info")
 
   if (elements.length !== 2) return null
 
@@ -68,7 +67,11 @@ export default function ElementComparison({ elements, onClose }: ElementComparis
     },
   ]
 
-  const showImageTab = element1.image || element2.image
+  // Function to count stable isotopes
+  const countStableIsotopes = (isotopes?: IsotopeInfo[]): number => {
+    if (!isotopes) return 0
+    return isotopes.filter((isotope) => isotope.isStable).length
+  }
 
   return (
     <motion.div
@@ -109,31 +112,17 @@ export default function ElementComparison({ elements, onClose }: ElementComparis
             Info
           </button>
           <button
-            onClick={() => setActiveTab("3d")}
+            onClick={() => setActiveTab("isotopes")}
             className={cn(
               "flex flex-1 items-center justify-center gap-1 rounded-lg border border-amber-200 px-3 py-2 text-sm font-medium transition-colors dark:border-amber-900/50",
-              activeTab === "3d"
+              activeTab === "isotopes"
                 ? "bg-amber-100 text-amber-900 dark:bg-amber-900/30 dark:text-amber-300"
                 : "bg-white text-amber-700 hover:bg-amber-50 dark:bg-slate-800 dark:text-amber-400 dark:hover:bg-slate-800/80",
             )}
           >
-            <Cube className="h-4 w-4" />
-            <span>3D Models</span>
+            <AtomIcon className="h-4 w-4" />
+            <span>Isotopes</span>
           </button>
-          {showImageTab && (
-            <button
-              onClick={() => setActiveTab("image")}
-              className={cn(
-                "flex flex-1 items-center justify-center gap-1 rounded-lg border border-amber-200 px-3 py-2 text-sm font-medium transition-colors dark:border-amber-900/50",
-                activeTab === "image"
-                  ? "bg-amber-100 text-amber-900 dark:bg-amber-900/30 dark:text-amber-300"
-                  : "bg-white text-amber-700 hover:bg-amber-50 dark:bg-slate-800 dark:text-amber-400 dark:hover:bg-slate-800/80",
-              )}
-            >
-              <ImageIcon className="h-4 w-4" />
-              <span>Images</span>
-            </button>
-          )}
         </div>
 
         {activeTab === "info" && (
@@ -254,71 +243,131 @@ export default function ElementComparison({ elements, onClose }: ElementComparis
           </>
         )}
 
-        {activeTab === "3d" && (
+        {activeTab === "isotopes" && (
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div>
               <h3 className="mb-3 font-serif text-xl font-semibold text-amber-800 dark:text-amber-400">
-                {element1.name} Atomic Model
+                {element1.name} Isotopes
               </h3>
-              <AtomicModel3D element={element1} />
+
+              {element1.isotopes && element1.isotopes.length > 0 ? (
+                <div className="space-y-3">
+                  <p className="text-sm text-amber-700 dark:text-amber-500">
+                    {element1.name} has {element1.isotopes.length} known isotopes,
+                    {countStableIsotopes(element1.isotopes) > 0
+                      ? ` ${countStableIsotopes(element1.isotopes)} of which ${countStableIsotopes(element1.isotopes) === 1 ? "is" : "are"} stable.`
+                      : " all of which are radioactive."}
+                  </p>
+
+                  {element1.isotopes.map((isotope: IsotopeInfo) => (
+                    <div
+                      key={isotope.massNumber}
+                      className="rounded-lg border border-amber-200 bg-amber-50/50 p-3 dark:border-amber-900/30 dark:bg-amber-900/10"
+                    >
+                      <h4 className="flex items-center text-base font-medium text-amber-900 dark:text-amber-300">
+                        <span className="mr-2">
+                          {element1.symbol}-{isotope.massNumber}
+                        </span>
+                        {isotope.isStable ? (
+                          <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/40 dark:text-green-300">
+                            Stable
+                          </span>
+                        ) : (
+                          <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
+                            Radioactive
+                          </span>
+                        )}
+                      </h4>
+                      {isotope.abundance !== undefined && (
+                        <p className="mt-1 text-sm text-amber-800 dark:text-amber-400">
+                          Abundance: {isotope.abundance.toFixed(4)}%
+                        </p>
+                      )}
+                      {isotope.halfLife && (
+                        <p className="mt-1 text-sm text-amber-800 dark:text-amber-400">Half-life: {isotope.halfLife}</p>
+                      )}
+                      {isotope.description && (
+                        <p className="mt-1 text-xs text-amber-700 dark:text-amber-500">{isotope.description}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/30 dark:bg-amber-900/10">
+                  <p className="text-amber-800 dark:text-amber-400">No detailed isotope data available.</p>
+                </div>
+              )}
             </div>
+
             <div>
               <h3 className="mb-3 font-serif text-xl font-semibold text-amber-800 dark:text-amber-400">
-                {element2.name} Atomic Model
+                {element2.name} Isotopes
               </h3>
-              <AtomicModel3D element={element2} />
+
+              {element2.isotopes && element2.isotopes.length > 0 ? (
+                <div className="space-y-3">
+                  <p className="text-sm text-amber-700 dark:text-amber-500">
+                    {element2.name} has {element2.isotopes.length} known isotopes,
+                    {countStableIsotopes(element2.isotopes) > 0
+                      ? ` ${countStableIsotopes(element2.isotopes)} of which ${countStableIsotopes(element2.isotopes) === 1 ? "is" : "are"} stable.`
+                      : " all of which are radioactive."}
+                  </p>
+
+                  {element2.isotopes.map((isotope: IsotopeInfo) => (
+                    <div
+                      key={isotope.massNumber}
+                      className="rounded-lg border border-amber-200 bg-amber-50/50 p-3 dark:border-amber-900/30 dark:bg-amber-900/10"
+                    >
+                      <h4 className="flex items-center text-base font-medium text-amber-900 dark:text-amber-300">
+                        <span className="mr-2">
+                          {element2.symbol}-{isotope.massNumber}
+                        </span>
+                        {isotope.isStable ? (
+                          <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/40 dark:text-green-300">
+                            Stable
+                          </span>
+                        ) : (
+                          <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
+                            Radioactive
+                          </span>
+                        )}
+                      </h4>
+                      {isotope.abundance !== undefined && (
+                        <p className="mt-1 text-sm text-amber-800 dark:text-amber-400">
+                          Abundance: {isotope.abundance.toFixed(4)}%
+                        </p>
+                      )}
+                      {isotope.halfLife && (
+                        <p className="mt-1 text-sm text-amber-800 dark:text-amber-400">Half-life: {isotope.halfLife}</p>
+                      )}
+                      {isotope.description && (
+                        <p className="mt-1 text-xs text-amber-700 dark:text-amber-500">{isotope.description}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/30 dark:bg-amber-900/10">
+                  <p className="text-amber-800 dark:text-amber-400">No detailed isotope data available.</p>
+                </div>
+              )}
             </div>
+
             <div className="col-span-1 md:col-span-2">
               <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/30 dark:bg-amber-900/10">
-                <h4 className="font-medium text-amber-800 dark:text-amber-400">Compare the atomic structures</h4>
+                <h4 className="font-medium text-amber-800 dark:text-amber-400">Isotope Comparison</h4>
                 <p className="mt-1 text-sm text-amber-700 dark:text-amber-500">
-                  Notice the differences in electron configuration between {element1.name} and {element2.name}.
-                  {element1.atomicNumber < element2.atomicNumber
-                    ? ` ${element2.name} has ${element2.atomicNumber - element1.atomicNumber} more protons in its nucleus.`
-                    : ` ${element1.name} has ${element1.atomicNumber - element2.atomicNumber} more protons in its nucleus.`}{" "}
-                  This difference in atomic structure leads to their distinct chemical properties.
+                  Comparing the isotopes of {element1.name} and {element2.name} shows differences in their nuclear
+                  stability and abundance.
+                  {countStableIsotopes(element1.isotopes) !== countStableIsotopes(element2.isotopes)
+                    ? ` ${element1.name} has ${countStableIsotopes(element1.isotopes)} stable ${countStableIsotopes(element1.isotopes) === 1 ? "isotope" : "isotopes"}, 
+                    while ${element2.name} has ${countStableIsotopes(element2.isotopes)}.`
+                    : ` Both elements have ${countStableIsotopes(element1.isotopes)} stable ${countStableIsotopes(element1.isotopes) === 1 ? "isotope" : "isotopes"}.`}
+                  These differences reflect their positions in the periodic table and the nuclear forces at play in
+                  their nuclei.
                 </p>
               </div>
             </div>
-          </div>
-        )}
-
-        {activeTab === "image" && (
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            {element1.image && (
-              <div>
-                <h3 className="mb-3 font-serif text-xl font-semibold text-amber-800 dark:text-amber-400">
-                  {element1.name}
-                </h3>
-                <div className="overflow-hidden rounded-lg border border-amber-200 bg-white dark:border-amber-900/30 dark:bg-slate-800">
-                  <div className="relative aspect-square w-full">
-                    <Image
-                      src={element1.image || "/placeholder.svg"}
-                      alt={`Visual representation of ${element1.name}`}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-            {element2.image && (
-              <div>
-                <h3 className="mb-3 font-serif text-xl font-semibold text-amber-800 dark:text-amber-400">
-                  {element2.name}
-                </h3>
-                <div className="overflow-hidden rounded-lg border border-amber-200 bg-white dark:border-amber-900/30 dark:bg-slate-800">
-                  <div className="relative aspect-square w-full">
-                    <Image
-                      src={element2.image || "/placeholder.svg"}
-                      alt={`Visual representation of ${element2.name}`}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         )}
       </motion.div>
