@@ -7,10 +7,18 @@ export interface IsotopeInfo {
   halfLife?: string // for radioactive isotopes
   isStable: boolean
   description?: string
+  decayModes?: string[] // Types of decay this isotope undergoes
+  decayChainKey?: string // Key to look up the decay chain
 }
 
 export interface ElementWithIsotopes extends ElementType {
   isotopes: IsotopeInfo[]
+  radioactivity?: {
+    isRadioactive: boolean
+    description?: string
+    radiationTypes?: string[]
+    hazardLevel?: "Low" | "Medium" | "High" | "Extreme"
+  }
 }
 
 // Function to add isotope data to elements
@@ -19,8 +27,76 @@ export function addIsotopeData(elements: ElementType[]): ElementWithIsotopes[] {
     return {
       ...element,
       isotopes: getIsotopesForElement(element.atomicNumber),
+      radioactivity: getRadioactivityInfo(element.atomicNumber),
     }
   })
+}
+
+// Get radioactivity information for an element
+function getRadioactivityInfo(atomicNumber: number): ElementWithIsotopes["radioactivity"] {
+  // Elements with atomic numbers >= 83 (bismuth) are generally radioactive
+  // Some lighter elements also have radioactive isotopes
+
+  if (atomicNumber >= 83) {
+    return {
+      isRadioactive: true,
+      description: "Naturally radioactive element with no stable isotopes.",
+      radiationTypes: ["Alpha", "Beta", "Gamma"],
+      hazardLevel: atomicNumber >= 90 ? "High" : "Medium",
+    }
+  }
+
+  // Special cases for radioactive elements with atomic number < 83
+  switch (atomicNumber) {
+    case 43: // Technetium
+      return {
+        isRadioactive: true,
+        description: "The lightest element with no stable isotopes.",
+        radiationTypes: ["Beta", "Gamma"],
+        hazardLevel: "Medium",
+      }
+    case 61: // Promethium
+      return {
+        isRadioactive: true,
+        description: "Radioactive rare earth element with no stable isotopes.",
+        radiationTypes: ["Beta", "Gamma"],
+        hazardLevel: "Medium",
+      }
+    case 19: // Potassium (K-40 is radioactive)
+      return {
+        isRadioactive: true,
+        description: "Contains the naturally occurring radioactive isotope K-40.",
+        radiationTypes: ["Beta", "Gamma"],
+        hazardLevel: "Low",
+      }
+    case 6: // Carbon (C-14 is radioactive)
+      return {
+        isRadioactive: true,
+        description: "Contains trace amounts of radioactive C-14 used in radiocarbon dating.",
+        radiationTypes: ["Beta"],
+        hazardLevel: "Low",
+      }
+    case 1: // Hydrogen (Tritium is radioactive)
+      return {
+        isRadioactive: true,
+        description: "Contains the radioactive isotope tritium (H-3).",
+        radiationTypes: ["Beta"],
+        hazardLevel: "Low",
+      }
+    default:
+      if (atomicNumber < 83) {
+        return {
+          isRadioactive: false,
+          description: "Not significantly radioactive in its natural state.",
+        }
+      }
+      return {
+        isRadioactive: true,
+        description: "Naturally radioactive element.",
+        radiationTypes: ["Alpha", "Beta", "Gamma"],
+        hazardLevel: "Medium",
+      }
+  }
 }
 
 // Get isotope data for a specific element
@@ -48,6 +124,7 @@ function getIsotopesForElement(atomicNumber: number): IsotopeInfo[] {
           isStable: false,
           description:
             "Tritium - radioactive isotope with one proton and two neutrons, used in nuclear weapons and fusion research",
+          decayModes: ["beta-minus"],
         },
       ]
     case 2: // Helium
@@ -84,6 +161,8 @@ function getIsotopesForElement(atomicNumber: number): IsotopeInfo[] {
           halfLife: "5,730 years",
           isStable: false,
           description: "Radioactive isotope used in radiocarbon dating of archaeological artifacts",
+          decayModes: ["beta-minus"],
+          decayChainKey: "carbon-14",
         },
       ]
     case 7: // Nitrogen
@@ -126,6 +205,8 @@ function getIsotopesForElement(atomicNumber: number): IsotopeInfo[] {
           halfLife: "1.25 billion years",
           isStable: false,
           description: "Radioactive isotope used in potassium-argon dating",
+          decayModes: ["beta-minus", "electron-capture"],
+          decayChainKey: "potassium-40",
         },
         { massNumber: 41, abundance: 6.7302, isStable: true, description: "Stable isotope of potassium" },
       ]
@@ -141,6 +222,23 @@ function getIsotopesForElement(atomicNumber: number): IsotopeInfo[] {
         { massNumber: 63, abundance: 69.15, isStable: true, description: "The most common copper isotope" },
         { massNumber: 65, abundance: 30.85, isStable: true, description: "Second stable isotope of copper" },
       ]
+    case 43: // Technetium
+      return [
+        {
+          massNumber: 97,
+          halfLife: "4.21 million years",
+          isStable: false,
+          description: "Longest-lived isotope of technetium",
+          decayModes: ["beta-minus"],
+        },
+        {
+          massNumber: 99,
+          halfLife: "211,000 years",
+          isStable: false,
+          description: "Used in medical diagnostics and nuclear medicine",
+          decayModes: ["beta-minus"],
+        },
+      ]
     case 47: // Silver
       return [
         { massNumber: 107, abundance: 51.839, isStable: true, description: "One of two stable silver isotopes" },
@@ -154,12 +252,19 @@ function getIsotopesForElement(atomicNumber: number): IsotopeInfo[] {
           halfLife: "8.02 days",
           isStable: false,
           description: "Used in nuclear medicine for thyroid treatments",
+          decayModes: ["beta-minus", "gamma"],
         },
       ]
     case 79: // Gold
       return [
         { massNumber: 197, abundance: 100, isStable: true, description: "The only stable isotope of gold" },
-        { massNumber: 198, halfLife: "2.7 days", isStable: false, description: "Used in some medical applications" },
+        {
+          massNumber: 198,
+          halfLife: "2.7 days",
+          isStable: false,
+          description: "Used in some medical applications",
+          decayModes: ["beta-minus", "gamma"],
+        },
       ]
     case 82: // Lead
       return [
@@ -173,6 +278,77 @@ function getIsotopesForElement(atomicNumber: number): IsotopeInfo[] {
           description: "Most abundant stable lead isotope, product of thorium-232 decay",
         },
       ]
+    case 83: // Bismuth
+      return [
+        {
+          massNumber: 209,
+          abundance: 100,
+          halfLife: "1.9×10^19 years",
+          isStable: false,
+          description: "Extremely long half-life, considered practically stable for most purposes",
+          decayModes: ["alpha"],
+        },
+        {
+          massNumber: 210,
+          halfLife: "5.01 days",
+          isStable: false,
+          description: "Part of the uranium decay series",
+          decayModes: ["beta-minus"],
+        },
+      ]
+    case 86: // Radon
+      return [
+        {
+          massNumber: 222,
+          halfLife: "3.8 days",
+          isStable: false,
+          description: "Most stable isotope of radon, health hazard in basements",
+          decayModes: ["alpha"],
+        },
+        {
+          massNumber: 220,
+          halfLife: "55.6 seconds",
+          isStable: false,
+          description: "Also known as thoron, part of the thorium decay series",
+          decayModes: ["alpha"],
+        },
+      ]
+    case 88: // Radium
+      return [
+        {
+          massNumber: 226,
+          halfLife: "1,600 years",
+          isStable: false,
+          description: "Most common isotope of radium, used historically in luminous paint",
+          decayModes: ["alpha", "gamma"],
+        },
+        {
+          massNumber: 228,
+          halfLife: "5.75 years",
+          isStable: false,
+          description: "Part of the thorium decay series",
+          decayModes: ["beta-minus"],
+        },
+      ]
+    case 90: // Thorium
+      return [
+        {
+          massNumber: 232,
+          abundance: 99.98,
+          halfLife: "14.05 billion years",
+          isStable: false,
+          description: "Fertile material that can be converted into nuclear fuel",
+          decayModes: ["alpha"],
+          decayChainKey: "thorium-232",
+        },
+        {
+          massNumber: 230,
+          halfLife: "75,380 years",
+          isStable: false,
+          description: "Part of the uranium-238 decay series",
+          decayModes: ["alpha"],
+        },
+      ]
     case 92: // Uranium
       return [
         {
@@ -181,6 +357,7 @@ function getIsotopesForElement(atomicNumber: number): IsotopeInfo[] {
           halfLife: "245,500 years",
           isStable: false,
           description: "Intermediate decay product in uranium series",
+          decayModes: ["alpha"],
         },
         {
           massNumber: 235,
@@ -188,6 +365,8 @@ function getIsotopesForElement(atomicNumber: number): IsotopeInfo[] {
           halfLife: "703.8 million years",
           isStable: false,
           description: "Used in nuclear reactors and weapons",
+          decayModes: ["alpha", "gamma"],
+          decayChainKey: "uranium-235",
         },
         {
           massNumber: 238,
@@ -195,11 +374,57 @@ function getIsotopesForElement(atomicNumber: number): IsotopeInfo[] {
           halfLife: "4.468 billion years",
           isStable: false,
           description: "Most abundant uranium isotope, used in depleted uranium applications",
+          decayModes: ["alpha"],
+          decayChainKey: "uranium-238",
+        },
+      ]
+    case 94: // Plutonium
+      return [
+        {
+          massNumber: 238,
+          halfLife: "87.7 years",
+          isStable: false,
+          description: "Used in radioisotope thermoelectric generators for space missions",
+          decayModes: ["alpha"],
+        },
+        {
+          massNumber: 239,
+          halfLife: "24,110 years",
+          isStable: false,
+          description: "Primary fissile isotope used in nuclear weapons",
+          decayModes: ["alpha"],
+          decayChainKey: "plutonium-239",
+        },
+        {
+          massNumber: 240,
+          halfLife: "6,563 years",
+          isStable: false,
+          description: "Present in spent nuclear fuel",
+          decayModes: ["alpha"],
         },
       ]
     default:
       // For elements without specific isotope data, provide a generic entry
-      return [{ massNumber: atomicNumber, abundance: 100, isStable: true, description: "Primary isotope" }]
+      if (atomicNumber < 83) {
+        return [
+          {
+            massNumber: Math.round(atomicNumber * 2.5),
+            abundance: 100,
+            isStable: true,
+            description: "Primary isotope",
+          },
+        ]
+      } else {
+        return [
+          {
+            massNumber: Math.round(atomicNumber * 2.5),
+            isStable: false,
+            halfLife: "Varies",
+            description: "Radioactive isotope",
+            decayModes: ["alpha", "beta-minus"],
+          },
+        ]
+      }
   }
 }
 

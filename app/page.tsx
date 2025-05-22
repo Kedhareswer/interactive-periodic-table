@@ -3,7 +3,8 @@ import type { Metadata, Viewport } from "next"
 
 export const metadata: Metadata = {
   title: "तत्त्व चक्र | The Periodic Table with Indian Historical Theme",
-  description: "An interactive periodic table with all 118 elements, featuring an Indian historical aesthetic",
+  description:
+    "An interactive periodic table with all 118 elements, featuring detailed isotope and radioactivity information",
 }
 
 export const viewport: Viewport = {
@@ -27,8 +28,8 @@ export default function Home() {
               blocks of our universe.
             </p>
             <p className="mt-2 text-sm md:text-base text-amber-900 dark:text-amber-200">
-              Explore all 118 elements in this interactive periodic table, designed with an aesthetic inspired by
-              India's rich architectural heritage and cultural traditions.
+              Explore all 118 elements in this interactive periodic table, featuring detailed information about
+              isotopes, nuclear decay, radioactivity, and practical applications of each element.
             </p>
           </div>
         </header>

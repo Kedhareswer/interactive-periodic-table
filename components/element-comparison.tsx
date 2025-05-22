@@ -4,7 +4,7 @@ import { useState } from "react"
 import type { ElementType } from "@/types/element"
 import type { IsotopeInfo } from "@/data/element-isotopes"
 import { motion } from "framer-motion"
-import { X, Beaker, AtomIcon } from "lucide-react"
+import { X, Beaker, AtomIcon, Radiation } from "lucide-react"
 import { getCategoryColor } from "@/lib/categorize-elements"
 import { cn } from "@/lib/utils"
 import PeriodicTrends from "./periodic-trends"
@@ -16,7 +16,7 @@ interface ElementComparisonProps {
 }
 
 export default function ElementComparison({ elements, onClose }: ElementComparisonProps) {
-  const [activeTab, setActiveTab] = useState<"info" | "isotopes">("info")
+  const [activeTab, setActiveTab] = useState<"info" | "isotopes" | "radioactivity">("info")
 
   if (elements.length !== 2) return null
 
@@ -73,6 +73,12 @@ export default function ElementComparison({ elements, onClose }: ElementComparis
     return isotopes.filter((isotope) => isotope.isStable).length
   }
 
+  // Function to count radioactive isotopes
+  const countRadioactiveIsotopes = (isotopes?: IsotopeInfo[]): number => {
+    if (!isotopes) return 0
+    return isotopes.filter((isotope) => !isotope.isStable).length
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -122,6 +128,18 @@ export default function ElementComparison({ elements, onClose }: ElementComparis
           >
             <AtomIcon className="h-4 w-4" />
             <span>Isotopes</span>
+          </button>
+          <button
+            onClick={() => setActiveTab("radioactivity")}
+            className={cn(
+              "flex flex-1 items-center justify-center gap-1 rounded-lg border border-amber-200 px-3 py-2 text-sm font-medium transition-colors dark:border-amber-900/50",
+              activeTab === "radioactivity"
+                ? "bg-amber-100 text-amber-900 dark:bg-amber-900/30 dark:text-amber-300"
+                : "bg-white text-amber-700 hover:bg-amber-50 dark:bg-slate-800 dark:text-amber-400 dark:hover:bg-slate-800/80",
+            )}
+          >
+            <Radiation className="h-4 w-4" />
+            <span>Radioactivity</span>
           </button>
         </div>
 
@@ -289,6 +307,21 @@ export default function ElementComparison({ elements, onClose }: ElementComparis
                       {isotope.description && (
                         <p className="mt-1 text-xs text-amber-700 dark:text-amber-500">{isotope.description}</p>
                       )}
+                      {isotope.decayModes && isotope.decayModes.length > 0 && (
+                        <div className="mt-2">
+                          <p className="text-xs text-amber-700 dark:text-amber-500">Decay Modes:</p>
+                          <div className="mt-1 flex flex-wrap gap-1">
+                            {isotope.decayModes.map((mode) => (
+                              <span
+                                key={mode}
+                                className="rounded-md bg-amber-100 px-1.5 py-0.5 text-xs text-amber-900 dark:bg-amber-900/30 dark:text-amber-300"
+                              >
+                                {mode}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -343,6 +376,21 @@ export default function ElementComparison({ elements, onClose }: ElementComparis
                       {isotope.description && (
                         <p className="mt-1 text-xs text-amber-700 dark:text-amber-500">{isotope.description}</p>
                       )}
+                      {isotope.decayModes && isotope.decayModes.length > 0 && (
+                        <div className="mt-2">
+                          <p className="text-xs text-amber-700 dark:text-amber-500">Decay Modes:</p>
+                          <div className="mt-1 flex flex-wrap gap-1">
+                            {isotope.decayModes.map((mode) => (
+                              <span
+                                key={mode}
+                                className="rounded-md bg-amber-100 px-1.5 py-0.5 text-xs text-amber-900 dark:bg-amber-900/30 dark:text-amber-300"
+                              >
+                                {mode}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -366,6 +414,187 @@ export default function ElementComparison({ elements, onClose }: ElementComparis
                   These differences reflect their positions in the periodic table and the nuclear forces at play in
                   their nuclei.
                 </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === "radioactivity" && (
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div>
+              <h3 className="mb-3 font-serif text-xl font-semibold text-amber-800 dark:text-amber-400">
+                {element1.name} Radioactivity
+              </h3>
+
+              {element1.radioactivity ? (
+                <div className="rounded-lg border border-amber-200 bg-amber-50/50 p-4 dark:border-amber-900/30 dark:bg-amber-900/10">
+                  <div className="flex items-center gap-2">
+                    <h4 className="text-lg font-medium text-amber-900 dark:text-amber-300">
+                      {element1.radioactivity.isRadioactive ? "Radioactive Element" : "Non-Radioactive Element"}
+                    </h4>
+                    {element1.radioactivity.isRadioactive && element1.radioactivity.hazardLevel && (
+                      <span
+                        className={cn(
+                          "rounded-full px-2 py-0.5 text-xs font-medium",
+                          element1.radioactivity.hazardLevel === "Low"
+                            ? "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300"
+                            : element1.radioactivity.hazardLevel === "Medium"
+                              ? "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300"
+                              : element1.radioactivity.hazardLevel === "High"
+                                ? "bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-300"
+                                : "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300",
+                        )}
+                      >
+                        {element1.radioactivity.hazardLevel} Hazard
+                      </span>
+                    )}
+                  </div>
+
+                  {element1.radioactivity.description && (
+                    <p className="mt-2 text-amber-800 dark:text-amber-400">{element1.radioactivity.description}</p>
+                  )}
+
+                  {element1.radioactivity.radiationTypes && element1.radioactivity.radiationTypes.length > 0 && (
+                    <div className="mt-4">
+                      <p className="text-sm font-medium text-amber-700 dark:text-amber-500">Radiation Types:</p>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {element1.radioactivity.radiationTypes.map((type) => (
+                          <div
+                            key={type}
+                            className="rounded-md bg-amber-100 px-2 py-1 text-xs font-medium text-amber-900 dark:bg-amber-900/30 dark:text-amber-300"
+                          >
+                            {type} Radiation
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {element1.isotopes && countRadioactiveIsotopes(element1.isotopes) > 0 && (
+                    <div className="mt-4">
+                      <p className="text-sm font-medium text-amber-700 dark:text-amber-500">Radioactive Isotopes:</p>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {element1.isotopes
+                          .filter((i) => !i.isStable)
+                          .map((isotope) => (
+                            <div
+                              key={isotope.massNumber}
+                              className="rounded-md bg-amber-100 px-2 py-1 text-xs font-medium text-amber-900 dark:bg-amber-900/30 dark:text-amber-300"
+                            >
+                              {element1.symbol}-{isotope.massNumber}
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/30 dark:bg-amber-900/10">
+                  <p className="text-amber-800 dark:text-amber-400">No radioactivity data available.</p>
+                </div>
+              )}
+            </div>
+
+            <div>
+              <h3 className="mb-3 font-serif text-xl font-semibold text-amber-800 dark:text-amber-400">
+                {element2.name} Radioactivity
+              </h3>
+
+              {element2.radioactivity ? (
+                <div className="rounded-lg border border-amber-200 bg-amber-50/50 p-4 dark:border-amber-900/30 dark:bg-amber-900/10">
+                  <div className="flex items-center gap-2">
+                    <h4 className="text-lg font-medium text-amber-900 dark:text-amber-300">
+                      {element2.radioactivity.isRadioactive ? "Radioactive Element" : "Non-Radioactive Element"}
+                    </h4>
+                    {element2.radioactivity.isRadioactive && element2.radioactivity.hazardLevel && (
+                      <span
+                        className={cn(
+                          "rounded-full px-2 py-0.5 text-xs font-medium",
+                          element2.radioactivity.hazardLevel === "Low"
+                            ? "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300"
+                            : element2.radioactivity.hazardLevel === "Medium"
+                              ? "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300"
+                              : element2.radioactivity.hazardLevel === "High"
+                                ? "bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-300"
+                                : "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300",
+                        )}
+                      >
+                        {element2.radioactivity.hazardLevel} Hazard
+                      </span>
+                    )}
+                  </div>
+
+                  {element2.radioactivity.description && (
+                    <p className="mt-2 text-amber-800 dark:text-amber-400">{element2.radioactivity.description}</p>
+                  )}
+
+                  {element2.radioactivity.radiationTypes && element2.radioactivity.radiationTypes.length > 0 && (
+                    <div className="mt-4">
+                      <p className="text-sm font-medium text-amber-700 dark:text-amber-500">Radiation Types:</p>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {element2.radioactivity.radiationTypes.map((type) => (
+                          <div
+                            key={type}
+                            className="rounded-md bg-amber-100 px-2 py-1 text-xs font-medium text-amber-900 dark:bg-amber-900/30 dark:text-amber-300"
+                          >
+                            {type} Radiation
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {element2.isotopes && countRadioactiveIsotopes(element2.isotopes) > 0 && (
+                    <div className="mt-4">
+                      <p className="text-sm font-medium text-amber-700 dark:text-amber-500">Radioactive Isotopes:</p>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {element2.isotopes
+                          .filter((i) => !i.isStable)
+                          .map((isotope) => (
+                            <div
+                              key={isotope.massNumber}
+                              className="rounded-md bg-amber-100 px-2 py-1 text-xs font-medium text-amber-900 dark:bg-amber-900/30 dark:text-amber-300"
+                            >
+                              {element2.symbol}-{isotope.massNumber}
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/30 dark:bg-amber-900/10">
+                  <p className="text-amber-800 dark:text-amber-400">No radioactivity data available.</p>
+                </div>
+              )}
+            </div>
+
+            <div className="col-span-1 md:col-span-2">
+              <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/30 dark:bg-amber-900/10">
+                <h4 className="font-medium text-amber-800 dark:text-amber-400">Radioactivity Comparison</h4>
+                <p className="mt-1 text-sm text-amber-700 dark:text-amber-500">
+                  {element1.radioactivity?.isRadioactive && element2.radioactivity?.isRadioactive
+                    ? `Both ${element1.name} and ${element2.name} are radioactive elements.`
+                    : element1.radioactivity?.isRadioactive
+                      ? `${element1.name} is radioactive while ${element2.name} is not.`
+                      : element2.radioactivity?.isRadioactive
+                        ? `${element2.name} is radioactive while ${element1.name} is not.`
+                        : `Neither ${element1.name} nor ${element2.name} are significantly radioactive in their natural state.`}
+
+                  {element1.isotopes &&
+                    element2.isotopes &&
+                    ` ${element1.name} has ${countRadioactiveIsotopes(element1.isotopes)} radioactive ${
+                      countRadioactiveIsotopes(element1.isotopes) === 1 ? "isotope" : "isotopes"
+                    }, while ${element2.name} has ${countRadioactiveIsotopes(element2.isotopes)}.`}
+                </p>
+
+                {element1.radioactivity?.hazardLevel && element2.radioactivity?.hazardLevel && (
+                  <p className="mt-2 text-sm text-amber-700 dark:text-amber-500">
+                    {element1.radioactivity.hazardLevel === element2.radioactivity.hazardLevel
+                      ? `Both elements have a ${element1.radioactivity.hazardLevel.toLowerCase()} radiation hazard level.`
+                      : `${element1.name} has a ${element1.radioactivity.hazardLevel.toLowerCase()} radiation hazard level, while ${element2.name} has a ${element2.radioactivity.hazardLevel.toLowerCase()} level.`}
+                  </p>
+                )}
               </div>
             </div>
           </div>
