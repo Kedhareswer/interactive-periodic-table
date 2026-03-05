@@ -16,26 +16,42 @@ export function categorizeElements(elements: ElementType[]) {
 export function getCategoryColor(category: string) {
   switch (category) {
     case "Alkali Metal":
-      return "bg-gradient-to-br from-red-50 to-red-100 dark:from-red-950/30 dark:to-red-900/30 border-red-200 dark:border-red-900/50"
+      return "bg-gradient-to-br from-rose-100 to-rose-200 dark:from-rose-950/50 dark:to-rose-900/40 border-rose-300 dark:border-rose-800/60"
     case "Alkaline Earth Metal":
-      return "bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950/30 dark:to-orange-900/30 border-orange-200 dark:border-orange-900/50"
+      return "bg-gradient-to-br from-orange-100 to-orange-200 dark:from-orange-950/50 dark:to-orange-900/40 border-orange-300 dark:border-orange-800/60"
     case "Transition Metal":
-      return "bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950/30 dark:to-amber-900/30 border-amber-200 dark:border-amber-900/50"
+      return "bg-gradient-to-br from-amber-100 to-amber-200 dark:from-amber-950/50 dark:to-amber-900/40 border-amber-300 dark:border-amber-800/60"
     case "Post-Transition Metal":
-      return "bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-950/30 dark:to-yellow-900/30 border-yellow-200 dark:border-yellow-900/50"
+      return "bg-gradient-to-br from-yellow-100 to-yellow-200 dark:from-yellow-950/50 dark:to-yellow-900/40 border-yellow-300 dark:border-yellow-800/60"
     case "Metalloid":
-      return "bg-gradient-to-br from-lime-50 to-lime-100 dark:from-lime-950/30 dark:to-lime-900/30 border-lime-200 dark:border-lime-900/50"
+      return "bg-gradient-to-br from-lime-100 to-lime-200 dark:from-lime-950/50 dark:to-lime-900/40 border-lime-300 dark:border-lime-800/60"
     case "Nonmetal":
-      return "bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/30 dark:to-green-900/30 border-green-200 dark:border-green-900/50"
+      return "bg-gradient-to-br from-green-100 to-green-200 dark:from-green-950/50 dark:to-green-900/40 border-green-300 dark:border-green-800/60"
     case "Halogen":
-      return "bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-950/30 dark:to-emerald-900/30 border-emerald-200 dark:border-emerald-900/50"
+      return "bg-gradient-to-br from-teal-100 to-teal-200 dark:from-teal-950/50 dark:to-teal-900/40 border-teal-300 dark:border-teal-800/60"
     case "Noble Gas":
-      return "bg-gradient-to-br from-teal-50 to-teal-100 dark:from-teal-950/30 dark:to-teal-900/30 border-teal-200 dark:border-teal-900/50"
+      return "bg-gradient-to-br from-cyan-100 to-cyan-200 dark:from-cyan-950/50 dark:to-cyan-900/40 border-cyan-300 dark:border-cyan-800/60"
     case "Lanthanide":
-      return "bg-gradient-to-br from-cyan-50 to-cyan-100 dark:from-cyan-950/30 dark:to-cyan-900/30 border-cyan-200 dark:border-cyan-900/50"
+      return "bg-gradient-to-br from-indigo-100 to-indigo-200 dark:from-indigo-950/50 dark:to-indigo-900/40 border-indigo-300 dark:border-indigo-800/60"
     case "Actinide":
-      return "bg-gradient-to-br from-sky-50 to-sky-100 dark:from-sky-950/30 dark:to-sky-900/30 border-sky-200 dark:border-sky-900/50"
+      return "bg-gradient-to-br from-violet-100 to-violet-200 dark:from-violet-950/50 dark:to-violet-900/40 border-violet-300 dark:border-violet-800/60"
     default:
-      return "bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-950/30 dark:to-gray-900/30 border-gray-200 dark:border-gray-900/50"
+      return "bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-900/50 dark:to-slate-800/40 border-slate-300 dark:border-slate-700/60"
+  }
+}
+
+export function getCategoryDotColor(category: string): string {
+  switch (category) {
+    case "Alkali Metal": return "bg-rose-400"
+    case "Alkaline Earth Metal": return "bg-orange-400"
+    case "Transition Metal": return "bg-amber-400"
+    case "Post-Transition Metal": return "bg-yellow-400"
+    case "Metalloid": return "bg-lime-400"
+    case "Nonmetal": return "bg-green-500"
+    case "Halogen": return "bg-teal-400"
+    case "Noble Gas": return "bg-cyan-400"
+    case "Lanthanide": return "bg-indigo-400"
+    case "Actinide": return "bg-violet-400"
+    default: return "bg-slate-400"
   }
 }
