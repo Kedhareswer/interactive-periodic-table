@@ -23,6 +23,10 @@ html {
 }
 
 /* Custom scrollbar for element details modal */
+.overflow-y-auto {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(180, 130, 60, 0.35) transparent;
+}
 .overflow-y-auto::-webkit-scrollbar {
   width: 6px;
 }
@@ -50,13 +54,13 @@ html {
 }
 
 /* Fade in up for detail panels */
-@keyframes fadeInUp {
+@keyframes fade-in-up {
   from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 .animate-fade-in-up {
-  animation: fadeInUp 0.3s ease-out;
+  animation: fade-in-up 0.3s ease-out;
 }
 
 @layer base {

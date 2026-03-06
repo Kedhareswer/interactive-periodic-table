@@ -1,8 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import type { ElementType } from "@/types/element"
-import type { IsotopeInfo } from "@/data/element-isotopes"
+import type { ElementWithIsotopes, IsotopeInfo } from "@/data/element-isotopes"
 import { motion } from "framer-motion"
 import { X, Beaker, AtomIcon, Radiation } from "lucide-react"
 import { getCategoryColor } from "@/lib/categorize-elements"
@@ -11,7 +10,7 @@ import PeriodicTrends from "./periodic-trends"
 import TrendValueDisplay from "./trend-value-display"
 
 interface ElementComparisonProps {
-  elements: ElementType[]
+  elements: ElementWithIsotopes[]
   onClose: () => void
 }
 

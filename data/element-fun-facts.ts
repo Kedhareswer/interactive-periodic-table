@@ -37,14 +37,13 @@ export const elementFunFacts: Record<number, string> = {
   56: "Barium sulfate is swallowed as a 'barium meal' to make your digestive tract visible on X-rays.",
   74: "Tungsten has the highest melting point of all elements (3,422°C) and is used in light bulb filaments and cutting tools.",
   78: "Platinum is so rare that all the platinum ever mined in history would fit in an average-sized living room.",
-  79: "Your smartphone contains approximately 0.03 grams of gold. Globally, e-waste contains more gold per tonne than gold ore.",
+  79: "Gold is so malleable that 1 gram can be hammered into a sheet covering 1 square meter. Your smartphone contains about 0.03 g of gold — globally, e-waste holds more gold per tonne than gold ore.",
   80: "Mercury is the only metal that is liquid at room temperature (along with bromine, which is a nonmetal).",
   82: "Lead pipes installed by ancient Romans are still in place in some parts of Europe — the Latin word 'plumbum' gives us 'plumbing.'",
   86: "Radon seeps up through the ground and can accumulate in basements. It's the second leading cause of lung cancer.",
   88: "Radium was discovered by Marie Curie, who won two Nobel Prizes. Her notebooks are still so radioactive they're kept in lead-lined boxes.",
   92: "Uranium's radioactive decay is what generates most of Earth's internal heat, driving tectonic plates and volcanic activity.",
   94: "Plutonium doesn't exist in nature — it's entirely man-made. An amount the size of a softball contains enough energy to power a city.",
-  79: "Gold is so malleable that 1 gram can be hammered into a sheet covering 1 square meter.",
 }
 
 export function getElementFunFact(atomicNumber: number): string | null {

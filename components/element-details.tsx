@@ -1,59 +1,19 @@
 "use client"
 
 import { useState } from "react"
-import type { ElementType } from "@/types/element"
-import type { IsotopeInfo } from "@/data/element-isotopes"
+import type { ElementWithIsotopes, IsotopeInfo } from "@/data/element-isotopes"
 import { motion } from "framer-motion"
-import { X, Beaker, AtomIcon, Radiation, Lightbulb, Zap, Thermometer, FlaskConical } from "lucide-react"
+import { X, Beaker, AtomIcon, Radiation, Lightbulb, Zap, Thermometer } from "lucide-react"
 import { getCategoryColor } from "@/lib/categorize-elements"
 import { cn } from "@/lib/utils"
+import { getStateOfMatter } from "@/lib/element-state"
 import PeriodicTrends from "./periodic-trends"
 import TrendValueDisplay from "./trend-value-display"
 import { getDecayModeInfo, getDecayChain, type DecayChain } from "@/data/nuclear-decay"
 import { getElementFunFact, getElementEverydayLife } from "@/data/element-fun-facts"
 
-// Room-temperature state helpers
-const GAS_ELEMENTS = new Set([1, 2, 7, 8, 9, 10, 17, 18, 36, 54, 86])
-const LIQUID_ELEMENTS = new Set([35, 80])
-const SYNTHETIC_ELEMENTS = new Set([113, 114, 115, 116, 117, 118])
-
-function getStateOfMatter(atomicNumber: number): {
-  label: string
-  description: string
-  bgClass: string
-  textClass: string
-} {
-  if (GAS_ELEMENTS.has(atomicNumber))
-    return {
-      label: "Gas",
-      description: "Gas at room temperature (25°C)",
-      bgClass: "bg-sky-100 dark:bg-sky-900/40",
-      textClass: "text-sky-700 dark:text-sky-300",
-    }
-  if (LIQUID_ELEMENTS.has(atomicNumber))
-    return {
-      label: "Liquid",
-      description: "Liquid at room temperature (25°C)",
-      bgClass: "bg-blue-100 dark:bg-blue-900/40",
-      textClass: "text-blue-700 dark:text-blue-300",
-    }
-  if (SYNTHETIC_ELEMENTS.has(atomicNumber))
-    return {
-      label: "Synthetic",
-      description: "Synthetic element — properties not fully characterized",
-      bgClass: "bg-purple-100 dark:bg-purple-900/40",
-      textClass: "text-purple-700 dark:text-purple-300",
-    }
-  return {
-    label: "Solid",
-    description: "Solid at room temperature (25°C)",
-    bgClass: "bg-amber-100 dark:bg-amber-900/40",
-    textClass: "text-amber-700 dark:text-amber-300",
-  }
-}
-
 interface ElementDetailsProps {
-  element: ElementType
+  element: ElementWithIsotopes
   onClose: () => void
 }
 
@@ -74,7 +34,7 @@ export default function ElementDetails({ element, onClose }: ElementDetailsProps
     applications,
     isotopes,
     radioactivity,
-  } = element as ElementType & { radioactivity?: { isRadioactive: boolean; description?: string; radiationTypes?: string[]; hazardLevel?: string } }
+  } = element
 
   const [activeTab, setActiveTab] = useState<"info" | "isotopes" | "radioactivity">("info")
   const [selectedIsotope, setSelectedIsotope] = useState<IsotopeInfo | null>(null)
@@ -334,7 +294,7 @@ export default function ElementDetails({ element, onClose }: ElementDetailsProps
 
               {isotopes && isotopes.length > 0 ? (
                 <div className="space-y-3">
-                  {(isotopes as IsotopeInfo[]).map((isotope) => (
+                  {isotopes.map((isotope) => (
                     <div
                       key={isotope.massNumber}
                       className={cn(
@@ -543,19 +503,19 @@ export default function ElementDetails({ element, onClose }: ElementDetailsProps
                     </div>
                   )}
 
-                  {isotopes && (isotopes as IsotopeInfo[]).some((i) => !i.isStable) && (
+                  {isotopes && isotopes.some((i) => !i.isStable) && (
                     <div className="rounded-xl border border-amber-200 bg-amber-50/60 p-4 dark:border-amber-900/30 dark:bg-amber-900/10">
                       <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-amber-600 dark:text-amber-500">
                         Radioactive Isotopes
                       </h4>
                       <p className="mb-3 text-sm text-amber-800 dark:text-amber-400">
                         {name} has{" "}
-                        <strong>{(isotopes as IsotopeInfo[]).filter((i) => !i.isStable).length}</strong> known
+                        <strong>{isotopes.filter((i) => !i.isStable).length}</strong> known
                         radioactive isotope
-                        {(isotopes as IsotopeInfo[]).filter((i) => !i.isStable).length !== 1 ? "s" : ""}.
+                        {isotopes.filter((i) => !i.isStable).length !== 1 ? "s" : ""}.
                       </p>
                       <div className="flex flex-wrap gap-1.5">
-                        {(isotopes as IsotopeInfo[])
+                        {isotopes
                           .filter((i) => !i.isStable)
                           .map((isotope) => (
                             <span

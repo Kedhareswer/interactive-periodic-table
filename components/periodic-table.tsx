@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { elementsWithIsotopes } from "@/data/element-isotopes"
+import { elementsWithIsotopes, type ElementWithIsotopes } from "@/data/element-isotopes"
 import ElementCard from "./element-card"
 import ElementDetails from "./element-details"
 import ElementComparison from "./element-comparison"
@@ -13,9 +13,9 @@ import { X, Search, Shuffle, FlaskConical } from "lucide-react"
 import PeriodicTrends from "./periodic-trends"
 
 export default function PeriodicTable() {
-  const [selectedElement, setSelectedElement] = useState<ElementType | null>(null)
+  const [selectedElement, setSelectedElement] = useState<ElementWithIsotopes | null>(null)
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null)
-  const [comparisonElements, setComparisonElements] = useState<ElementType[]>([])
+  const [comparisonElements, setComparisonElements] = useState<ElementWithIsotopes[]>([])
   const [showComparison, setShowComparison] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
 
@@ -39,7 +39,7 @@ export default function PeriodicTable() {
     ? searchFilteredElements.filter((element) => element.category === categoryFilter)
     : searchFilteredElements
 
-  const handleElementClick = (element: ElementType) => {
+  const handleElementClick = (element: ElementWithIsotopes) => {
     if (comparisonElements.length < 2 && showComparison) {
       if (!comparisonElements.find((e) => e.atomicNumber === element.atomicNumber)) {
         setComparisonElements([...comparisonElements, element])
@@ -72,7 +72,7 @@ export default function PeriodicTable() {
       acc[element.atomicNumber] = element
       return acc
     },
-    {} as Record<number, ElementType>,
+    {} as Record<number, ElementWithIsotopes>,
   )
 
   const isSearchActive = searchQuery.trim().length > 0
@@ -146,7 +146,7 @@ export default function PeriodicTable() {
               : "border-amber-300 bg-transparent text-amber-800 hover:bg-amber-100 dark:border-amber-800 dark:text-amber-400 dark:hover:bg-amber-900/50",
           )}
         >
-          All (118)
+          All ({elementsWithIsotopes.length})
         </button>
         {Object.entries(categories).map(([category, els]) => (
           <button
@@ -272,9 +272,9 @@ export default function PeriodicTable() {
 }
 
 interface PeriodicTableGridProps {
-  elementsByNumber: Record<number, ElementType>
-  handleElementClick: (element: ElementType) => void
-  comparisonElements: ElementType[]
+  elementsByNumber: Record<number, ElementWithIsotopes>
+  handleElementClick: (element: ElementWithIsotopes) => void
+  comparisonElements: ElementWithIsotopes[]
   showComparison: boolean
   activeTrend: string | null
   getTrendColorForElement: (element: ElementType) => string

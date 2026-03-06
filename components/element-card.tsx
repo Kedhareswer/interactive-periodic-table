@@ -1,23 +1,8 @@
 import type { ElementType } from "@/types/element"
 import { cn } from "@/lib/utils"
 import { getCategoryColor } from "@/lib/categorize-elements"
+import { getStateLabel } from "@/lib/element-state"
 import { Check } from "lucide-react"
-
-// Elements that are liquid at room temperature (~25°C)
-const LIQUID_ELEMENTS = new Set([35, 80]) // Bromine, Mercury
-
-// Elements that are gas at room temperature (~25°C)
-const GAS_ELEMENTS = new Set([1, 2, 7, 8, 9, 10, 17, 18, 36, 54, 86])
-
-// Elements with unknown/synthetic state (heavy elements 113-118 except known ones)
-const SYNTHETIC_ELEMENTS = new Set([113, 114, 115, 116, 117, 118])
-
-function getStateLabel(atomicNumber: number): { label: string; color: string } | null {
-  if (GAS_ELEMENTS.has(atomicNumber)) return { label: "gas", color: "text-sky-500 dark:text-sky-400" }
-  if (LIQUID_ELEMENTS.has(atomicNumber)) return { label: "liq", color: "text-blue-500 dark:text-blue-400" }
-  if (SYNTHETIC_ELEMENTS.has(atomicNumber)) return { label: "syn", color: "text-purple-400 dark:text-purple-400" }
-  return null
-}
 
 interface ElementCardProps {
   element: ElementType
@@ -96,14 +81,17 @@ export default function ElementCard({
         >
           {compact ? (name.length > 8 ? name.substring(0, 7) + "…" : name) : name}
         </span>
-        {/* Atomic mass — shown in non-compact mode */}
-        {!compact && (
-          <span className="mt-0.5 text-[10px] text-amber-600/80 dark:text-amber-500/80">{atomicMass}</span>
-        )}
-        {/* Atomic mass — shown in compact mode too, very tiny */}
-        {compact && (
-          <span className="mt-0.5 text-[7px] text-amber-600/70 dark:text-amber-500/60 leading-none">{atomicMass}</span>
-        )}
+        {/* Atomic mass */}
+        <span
+          className={cn(
+            "mt-0.5",
+            compact
+              ? "text-[7px] leading-none text-amber-600/70 dark:text-amber-500/60"
+              : "text-[10px] text-amber-600/80 dark:text-amber-500/80",
+          )}
+        >
+          {atomicMass}
+        </span>
       </div>
 
       {/* Hover shimmer line */}

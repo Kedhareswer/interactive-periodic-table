@@ -87,7 +87,7 @@ const config = {
         "accordion-up": "accordion-up 0.2s ease-out",
       },
       fontFamily: {
-        serif: ["var(--font-playfair)", "serif"],
+        serif: ["Palatino Linotype", "Book Antiqua", "Palatino", "Georgia", "Times New Roman", "serif"],
       },
     },
   },
